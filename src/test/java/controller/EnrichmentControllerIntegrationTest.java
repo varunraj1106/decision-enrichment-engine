@@ -16,26 +16,16 @@ class EnrichmentControllerIntegrationTest{
     @Autowired
     private MockMvc mockMvc;
     @Test
-    void shouldRejectHighRiskTransaction() throws Exception{
-        String request = """
-                {
-                "merchantID":MERCH-001",
-                "customerID': "CUST-001",
-                "amount":75000,
-                "currecny":"USD",
-                "merchantCategory":"CRYPTO",
-                "sourceCountry":"GB",
-                "desctinationCountry": "KP",
-                "channel":"ONLINE"
-                }
-                """;
+    void shouldRejectHighRiskTransaction() throws Exception {
+        String request = "{\"merchantId\":\"MERCH-001\",\"customerId\":\"CUST-001\",\"amount\":75000,\"currency\":\"USD\",\"merchantCategory\":\"CRYPTO\",\"sourceCountry\":\"GB\",\"destinationCountry\":\"KP\",\"channel\":\"ONLINE\"}";
+
         mockMvc.perform(post("/api/v1/enrichment/decide")
-                .contentType(MediaType.APPLICATION_JSON).content(request))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(request))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.decision").value("REJECTED"))
                 .andExpect(jsonPath("$.riskScore").isNumber())
                 .andExpect(jsonPath("$.signals").isArray());
-
     }
     @Test
     void shouldReturn400ForInvalidRequest() throws Exception{
@@ -58,25 +48,5 @@ class EnrichmentControllerIntegrationTest{
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.decision").value("APPROVED"))
                 .andExpect(jsonPath("$.riskScore").value(0));
-    }
-    @Test
-    void shouldReturn400ForInvalidRequest() throws Exception {
-        String request = """
-            {
-                "merchantId": "",
-                "customerId": "",
-                "amount": -1,
-                "currency": "INVALID",
-                "merchantCategory": "",
-                "sourceCountry": "",
-                "destinationCountry": "",
-                "channel": ""
-            }
-            """;
-
-        mockMvc.perform(post("/api/v1/enrichment/decide")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(request))
-                .andExpect(status().isBadRequest());
     }
 }
